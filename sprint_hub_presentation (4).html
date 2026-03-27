@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Sprint Hub · Insights Copilot · AB InBev</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&family=Barlow:ital,wght@0,600;0,700;0,800;1,600;1,700;1,800&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --black:#000000;--white:#ffffff;
+  --gold:#e5b611;--gold-light:#f5e003;--gold-dark:#d1a33c;
+  --gold-dim:rgba(229,182,17,.12);--gold-line:rgba(229,182,17,.22);
+  --surface:#0a0a0a;--card:#111111;--border:#1e1e1e;--border2:#2a2a2a;
+  --text:#f0f0f0;--muted:#777777;--dim:#3a3a3a;
+  --red:#921a28;--blue:#325a6d;--green:#959b7b;
+  --serif:'Barlow',sans-serif;--sans:'Syne',sans-serif;--mono:'DM Mono',monospace;
+}
+html{scroll-behavior:smooth}
+body{background:var(--black);color:var(--text);font-family:var(--sans);overflow-x:hidden;cursor:none}
+
+/* cursor */
+#cursor{position:fixed;width:8px;height:8px;background:var(--gold);border-radius:50%;pointer-events:none;z-index:99999;transform:translate(-50%,-50%);transition:transform .12s}
+#cursor-ring{position:fixed;width:30px;height:30px;border:1px solid rgba(229,182,17,.35);border-radius:50%;pointer-events:none;z-index:99998;transform:translate(-50%,-50%);transition:left .07s,top .07s,transform .25s}
+
+/* fixed ui */
+#progress{position:fixed;top:0;left:0;width:0;height:3px;background:linear-gradient(90deg,var(--gold-dark),var(--gold),var(--gold-light));z-index:1000;transition:width .35s}
+#abi-mark{position:fixed;top:22px;left:30px;z-index:1000;display:flex;align-items:center;gap:10px}
+.abi-gem{width:28px;height:28px;background:linear-gradient(135deg,var(--gold-dark),var(--gold),var(--gold-light));clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%)}
+.abi-name{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase}
+#side-nav{position:fixed;right:26px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:10px;z-index:1000}
+.snav{width:5px;height:5px;border-radius:50%;background:var(--dim);cursor:pointer;transition:background .3s,height .3s,border-radius .3s}
+.snav.active{background:var(--gold);height:22px;border-radius:3px}
+#counter{position:fixed;bottom:26px;right:28px;font-family:var(--mono);font-size:11px;color:var(--dim);z-index:1000}
+#scroll-hint{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:11px;color:var(--dim);z-index:1000;display:flex;flex-direction:column;align-items:center;gap:5px;transition:opacity .4s;animation:sbounce 2s ease infinite}
+#scroll-hint .arr{font-size:14px;color:var(--gold)}
+@keyframes sbounce{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-5px)}}
+
+/* slides */
+.slide{width:100vw;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:90px 80px 80px;position:relative;overflow:hidden}
+.slide-sep{width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--border2),transparent)}
+
+/* reveal */
+.sr{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s ease}
+.sr.vis{opacity:1;transform:translateY(0)}
+.d1{transition-delay:.05s}.d2{transition-delay:.18s}.d3{transition-delay:.32s}
+.d4{transition-delay:.46s}.d5{transition-delay:.60s}.d6{transition-delay:.74s}
+
+/* typography */
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:20px;display:flex;align-items:center;gap:10px}
+.eyebrow::before{content:'';display:block;width:22px;height:1px;background:var(--gold)}
+.h1{font-family:var(--serif);font-size:clamp(46px,6vw,84px);line-height:1.03;letter-spacing:-.02em;color:var(--white);font-weight:800}
+.h1 em,.h2 em,.h3 em{font-style:italic;color:var(--gold);font-weight:700}
+.h2{font-family:var(--serif);font-size:clamp(34px,4.5vw,60px);line-height:1.06;color:var(--white);font-weight:800}
+.h3{font-family:var(--serif);font-size:clamp(24px,3.2vw,46px);line-height:1.1;color:var(--white);font-weight:800}
+.body-l{font-size:17px;line-height:1.75;color:#888}
+.body-m{font-size:14px;line-height:1.7;color:#666}
+.max-w{max-width:1100px;width:100%}
+.centered{display:flex;flex-direction:column;align-items:center;text-align:center}
+
+/* ── S1 title ── */
+#s1{background:var(--black);background-image:radial-gradient(ellipse 70% 50% at 50% 55%,rgba(229,182,17,.07) 0%,transparent 65%)}
+.title-badge{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--gold-line);border-radius:2px;padding:7px 16px;margin-bottom:30px;font-family:var(--mono);font-size:11px;color:var(--gold);background:var(--gold-dim);letter-spacing:.12em;text-transform:uppercase}
+.bpulse{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:pulse 2s ease infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(.6)}}
+.title-rule{width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--gold-line),transparent);margin:30px 0}
+.title-meta{display:flex;align-items:center;gap:18px;justify-content:center;font-family:var(--mono);font-size:12px;color:var(--dim);flex-wrap:wrap}
+.title-meta .sep{color:var(--border2)}
+
+/* ── S2 before ── */
+#s2{background:var(--surface);align-items:flex-start}
+.pain-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;width:100%;margin-top:26px}
+.pain-card{background:var(--card);border:1px solid var(--border2);border-radius:2px;padding:24px 26px;position:relative}
+.pain-card::after{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--red)}
+.pain-icon{font-size:22px;margin-bottom:12px}
+.pain-title{font-size:11px;font-weight:700;color:var(--white);letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px}
+.pain-step{display:flex;gap:12px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:13px;color:#555}
+.pain-step:last-child{border-bottom:none}
+.snum{font-family:var(--mono);font-size:10px;color:var(--red);background:rgba(146,26,40,.1);border:1px solid rgba(146,26,40,.18);border-radius:2px;padding:1px 5px;flex-shrink:0;margin-top:1px;height:fit-content}
+.pain-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;width:100%;margin-top:18px}
+.pain-stat{background:var(--card);border:1px solid var(--border2);border-bottom:2px solid var(--red);border-radius:2px;padding:16px;text-align:center}
+.ps-num{font-family:var(--serif);font-size:38px;color:var(--red);line-height:1;margin-bottom:4px}
+.ps-lbl{font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em}
+
+/* ── S3 shift ── */
+#s3{background:var(--black);background-image:radial-gradient(ellipse 50% 40% at 50% 50%,rgba(229,182,17,.05) 0%,transparent 60%)}
+.shift-table{display:grid;grid-template-columns:1fr 56px 1fr;width:100%;max-width:960px;margin-top:30px;background:var(--card);border:1px solid var(--border2);border-radius:2px;overflow:hidden}
+.shift-col{padding:30px 26px}
+.shift-col.before{border-right:1px solid var(--border2)}
+.shift-lbl{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;margin-bottom:20px;padding:4px 10px;border-radius:2px}
+.before .shift-lbl{background:rgba(146,26,40,.1);color:var(--red);border:1px solid rgba(146,26,40,.18)}
+.after  .shift-lbl{background:var(--gold-dim);color:var(--gold);border:1px solid var(--gold-line)}
+.shift-item{display:flex;align-items:flex-start;gap:12px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:14px}
+.shift-item:last-child{border-bottom:none}
+.before .shift-item{color:#4a4a4a}
+.after  .shift-item{color:#999}
+.sicon{font-size:14px;flex-shrink:0;margin-top:1px}
+.shift-mid{display:flex;align-items:center;justify-content:center;background:var(--gold-dim);border-left:1px solid var(--border2);border-right:1px solid var(--border2);color:var(--gold);font-size:18px}
+
+/* ── S4 sprint review ── */
+#s4{background:var(--surface);align-items:flex-start}
+.tool-layout{display:grid;grid-template-columns:290px 1fr;gap:20px;width:100%;margin-top:22px}
+.tool-sidebar{background:var(--card);border:1px solid var(--border2);border-radius:2px;padding:18px}
+.sb-sec{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.cfg-f{display:flex;justify-content:space-between;align-items:center;padding:7px 9px;margin-bottom:5px;background:rgba(0,0,0,.35);border:1px solid var(--border);border-radius:2px;font-size:11px;color:var(--muted);font-family:var(--mono)}
+.cfg-f .v{color:var(--text)}
+.run-btn{width:100%;margin-top:14px;padding:11px;background:var(--gold);color:var(--black);border:none;border-radius:2px;font-family:var(--sans);font-weight:700;font-size:13px;letter-spacing:.04em;display:flex;align-items:center;justify-content:center;gap:7px}
+.tool-main{display:flex;flex-direction:column;gap:9px}
+.stat-row{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}
+.stat-c{background:var(--card);border:1px solid var(--border2);border-bottom:2px solid var(--gold);border-radius:2px;padding:12px 11px}
+.sc-n{font-family:var(--mono);font-size:24px;color:var(--gold);line-height:1;margin-bottom:3px}
+.sc-l{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-family:var(--mono)}
+.ai-strip{background:var(--card);border:1px solid var(--border2);border-left:3px solid var(--gold);border-radius:0 2px 2px 0;padding:14px 16px}
+.ai-badge{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;color:var(--gold);background:var(--gold-dim);border:1px solid var(--gold-line);border-radius:2px;padding:3px 9px;margin-bottom:9px;letter-spacing:.08em;text-transform:uppercase}
+.ai-text{font-size:13px;line-height:1.7;color:#666}
+.ai-text strong{color:#aaa}
+.item-list{background:var(--card);border:1px solid var(--border2);border-radius:2px;overflow:hidden}
+.item-row{display:flex;align-items:center;gap:9px;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.04);font-size:12px}
+.item-row:last-child{border-bottom:none}
+.sdot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.ir-id{font-family:var(--mono);font-size:10px;color:var(--dim)}
+.ir-t{flex:1;color:#777;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ir-b{font-family:var(--mono);font-size:10px;padding:1px 6px;border-radius:2px;flex-shrink:0}
+.b-r{background:rgba(149,155,123,.15);color:#959b7b}
+.b-a{background:rgba(209,163,60,.12);color:var(--gold-dark)}
+.b-n{background:rgba(50,90,109,.2);color:#6a9db5}
+
+/* ── S5 trend ── */
+#s5{background:var(--black);align-items:flex-start}
+.trend-wrap{width:100%;margin-top:22px;display:flex;flex-direction:column;gap:12px}
+.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:9px}
+.kpi-c{background:var(--card);border:1px solid var(--border2);border-bottom:2px solid var(--gold);border-radius:2px;padding:14px}
+.kpi-v{font-family:var(--mono);font-size:26px;color:var(--gold);line-height:1;margin-bottom:3px}
+.kpi-l{font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.kpi-d{font-family:var(--mono);font-size:10px;margin-top:4px}
+.dup{color:var(--red)}.ddn{color:#959b7b}
+.chart-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.mini-chart{background:var(--card);border:1px solid var(--border2);border-radius:2px;padding:16px}
+.ct{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:12px}
+.bc{display:flex;align-items:flex-end;gap:5px;height:68px}
+.bc-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
+.bar{width:100%;border-radius:1px 1px 0 0;transform-origin:bottom;animation:grow .9s cubic-bezier(.22,.61,.36,1) forwards}
+@keyframes grow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+.bv{font-family:var(--mono);font-size:9px;color:var(--dim)}
+
+/* ── S6 hub ── */
+#s6{background:var(--black);background-image:radial-gradient(ellipse 60% 60% at 50% 50%,rgba(229,182,17,.07) 0%,transparent 65%)}
+.hub-diagram{position:relative;width:460px;height:460px;margin-top:28px}
+.ring{position:absolute;top:50%;left:50%;border-radius:50%;border:1px solid rgba(229,182,17,.1);transform:translate(-50%,-50%);animation:spinr 40s linear infinite}
+.ring-1{width:230px;height:230px}
+.ring-2{width:370px;height:370px;animation-direction:reverse;animation-duration:60s}
+@keyframes spinr{to{transform:translate(-50%,-50%) rotate(360deg)}}
+.rdot{position:absolute;width:5px;height:5px;background:var(--gold);border-radius:50%;top:-2px;left:50%;transform:translateX(-50%)}
+.hub-c{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:106px;height:106px;border-radius:50%;background:var(--black);border:1px solid var(--gold-line);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:0 0 40px rgba(229,182,17,.14),0 0 80px rgba(229,182,17,.06);z-index:10}
+.hci{font-size:24px}
+.hcl{font-family:var(--mono);font-size:10px;color:var(--gold);letter-spacing:.1em;text-transform:uppercase}
+.hub-node{position:absolute;width:82px;height:82px;border-radius:50%;background:var(--card);border:1px solid var(--border2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;transition:border-color .3s,transform .3s}
+.hub-node:hover{border-color:var(--gold);transform:scale(1.08)}
+.hni{font-size:17px}
+.hnl{font-family:var(--mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.hub-node:nth-child(5){top:29px;left:189px}
+.hub-node:nth-child(6){top:189px;left:349px}
+.hub-node:nth-child(7){top:349px;left:189px}
+.hub-node:nth-child(8){top:189px;left:29px}
+.hub-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.hub-tag{font-family:var(--mono);font-size:11px;color:var(--muted);text-align:center;margin-top:10px;letter-spacing:.07em}
+
+/* ── S7 impact ── */
+#s7{background:var(--surface)}
+.impact-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:860px;margin-top:32px}
+.impact-card{background:var(--card);border:1px solid var(--border2);border-bottom:3px solid var(--gold);border-radius:2px;padding:26px 20px}
+.ic-b{font-family:var(--mono);font-size:12px;color:var(--red);text-decoration:line-through;display:block;margin-bottom:8px}
+.ic-a{font-family:var(--serif);font-size:38px;color:var(--white);line-height:1;margin-bottom:5px}
+.ic-a em{font-style:italic;color:var(--gold)}
+.ic-l{font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em}
+
+/* ── S8 close ── */
+#s8{background:var(--black);background-image:radial-gradient(ellipse 50% 55% at 50% 65%,rgba(229,182,17,.06) 0%,transparent 60%)}
+.vision-items{display:flex;flex-direction:column;gap:9px;max-width:620px;margin-top:26px}
+.vision-item{display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--border2);border-left:3px solid var(--gold);border-radius:0 2px 2px 0;padding:13px 16px}
+.vi-icon{font-size:17px;flex-shrink:0}
+.vi-text{font-size:14px;color:#666}
+.vi-text strong{color:#aaa}
+.closing-quote{font-family:var(--serif);font-style:italic;font-weight:700;font-size:clamp(16px,2vw,22px);color:var(--gold);margin-top:32px;max-width:520px;text-align:center;line-height:1.55}
+.closing-quote::before{content:'\201C';font-size:2em;line-height:0;vertical-align:-.3em;margin-right:3px;color:var(--gold-dark)}
+.closing-quote::after{content:'\201D';font-size:2em;line-height:0;vertical-align:-.3em;margin-left:3px;color:var(--gold-dark)}
+.chips{display:flex;gap:9px;margin-top:26px;flex-wrap:wrap;justify-content:center}
+.chip{font-family:var(--mono);font-size:11px;padding:7px 14px;border-radius:2px;letter-spacing:.07em}
+.chip-o{border:1px solid var(--border2);color:var(--muted)}
+.chip-g{border:1px solid var(--gold-line);background:var(--gold-dim);color:var(--gold)}
+</style>
+</head>
+<body>
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+<div id="progress"></div>
+<div id="abi-mark"><div class="abi-gem"></div><span class="abi-name">AB InBev · Insights Copilot</span></div>
+<div id="side-nav"></div>
+<div id="counter">01 / 08</div>
+<div id="scroll-hint"><span class="arr">↓</span><span>scroll</span></div>
+
+<!-- S1 TITLE -->
+<section class="slide" id="s1" data-i="0">
+<div class="centered">
+  <div class="sr d1"><div class="title-badge"><span class="bpulse"></span>Insights Copilot · Sprint Operations</div></div>
+  <div class="sr d2"><div class="h1">From <em>scattered</em> queries<br>to one command centre</div></div>
+  <div class="sr d3"><div class="title-rule"></div></div>
+  <div class="sr d4"><p class="body-l">How we transformed sprint reporting from a<br>2-hour manual grind into a 2-minute ritual.</p></div>
+  <div class="title-meta sr d5">
+    <span>⚡ Sprint Hub</span><span class="sep">·</span><span>📋 Sprint Review</span><span class="sep">·</span>
+    <span>📈 Trend Analysis</span><span class="sep">·</span><span>🔁 Retro AI</span><span class="sep">·</span><span>🚨 Risk Detection</span>
+  </div>
+</div>
+</section>
+<div class="slide-sep"></div>
+
+<!-- S2 THE BEFORE -->
+<section class="slide" id="s2" data-i="1">
+<div class="max-w">
+  <div class="eyebrow sr d1">The Problem</div>
+  <div class="h3 sr d2">Every sprint, the same <em>painful routine.</em></div>
+  <div class="pain-grid sr d3">
+    <div class="pain-card">
+      <div class="pain-icon">😩</div><div class="pain-title">Sprint Review Prep</div>
+      <div class="pain-step"><span class="snum">01</span>Log into ADO, navigate to current sprint</div>
+      <div class="pain-step"><span class="snum">02</span>Run 6+ WIQL queries manually</div>
+      <div class="pain-step"><span class="snum">03</span>Export results, paste into Excel</div>
+      <div class="pain-step"><span class="snum">04</span>Count stories, bugs, tasks by hand or Pivot</div>
+      <div class="pain-step"><span class="snum">05</span>Build reports, calculate Say/Do ratio</div>
+      <div class="pain-step"><span class="snum">06</span>Send update to PM and Managers</div>
+    </div>
+    <div class="pain-card">
+      <div class="pain-icon">🔁</div><div class="pain-title">Risk &amp; Retro Overhead</div>
+      <div class="pain-step"><span class="snum">01</span>Manually scan for unassigned items</div>
+      <div class="pain-step"><span class="snum">02</span>Check stale tasks — no alerts, gut-feel only</div>
+      <div class="pain-step"><span class="snum">03</span>Copy retro board notes to notepad</div>
+      <div class="pain-step"><span class="snum">04</span>Write summary email from scratch</div>
+      <div class="pain-step"><span class="snum">05</span>Trend analysis? Open 3-5 old exports</div>
+      <div class="pain-step"><span class="snum">06</span>Compare sprint-over-sprint manually</div>
+    </div>
+  </div>
+  <div class="pain-stats sr d4">
+    <div class="pain-stat"><div class="ps-num">2–3</div><div class="ps-lbl">Hours per sprint</div></div>
+    <div class="pain-stat"><div class="ps-num">6+</div><div class="ps-lbl">ADO queries per review</div></div>
+    <div class="pain-stat"><div class="ps-num">4</div><div class="ps-lbl">Tools open at once</div></div>
+    <div class="pain-stat"><div class="ps-num">Minimal</div><div class="ps-lbl">Automation in place</div></div>
+  </div>
+</div>
+</section>
+<div class="slide-sep"></div>
+
+<!-- S3 THE SHIFT -->
+<section class="slide" id="s3" data-i="2">
+<div class="centered max-w" style="align-items:center">
+  <div class="eyebrow sr d1">The Shift</div>
+  <div class="h3 sr d2" style="text-align:center">We asked: <em>what if one click<br>did all of that?</em></div>
+  <div class="shift-table sr d3">
+    <div class="shift-col before">
+      <div class="shift-lbl">Before</div>
+      <div class="shift-item"><span class="sicon">😓</span>Multiple ADO tabs open</div>
+      <div class="shift-item"><span class="sicon">📋</span>Manual copy-paste to Excel</div>
+      <div class="shift-item"><span class="sicon">🔍</span>Gut-feel risk assessment</div>
+      <div class="shift-item"><span class="sicon">✍️</span>Non-automated retro summaries</div>
+      <div class="shift-item"><span class="sicon">📊</span>No velocity trend visibility</div>
+      <div class="shift-item"><span class="sicon">⏱️</span>2–3 hours every sprint</div>
+    </div>
+    <div class="shift-mid">→</div>
+    <div class="shift-col after">
+      <div class="shift-lbl">After</div>
+      <div class="shift-item"><span class="sicon">🎯</span>One file, one config, done</div>
+      <div class="shift-item"><span class="sicon">⚡</span>Live data pulled from ADO</div>
+      <div class="shift-item"><span class="sicon">🚨</span>Automated risk flags + alerts</div>
+      <div class="shift-item"><span class="sicon">🤖</span>AI summarises retro instantly</div>
+      <div class="shift-item"><span class="sicon">📈</span>5-sprint trend at a glance</div>
+      <div class="shift-item"><span class="sicon">✅</span>Under 2 minutes, every time</div>
+    </div>
+  </div>
+</div>
+</section>
+<div class="slide-sep"></div>
+
+<!-- S4 SPRINT REVIEW -->
+<section class="slide" id="s4" data-i="3">
+<div class="max-w">
+  <div class="eyebrow sr d1">Tool 1 · Sprint Review</div>
+  <div class="h3 sr d2">Full sprint summary, <em>generated live</em><br>from ADO in seconds.</div>
+  <div class="tool-layout sr d3">
+    <div class="tool-sidebar">
+      <div class="sb-sec">Configuration</div>
+      <div class="cfg-f"><span>Organisation</span><span class="v">ab-inbev-analytics</span></div>
+      <div class="cfg-f"><span>Project</span><span class="v">Gen AI Products</span></div>
+      <div class="cfg-f"><span>Iteration</span><span class="v">…Sprint 12</span></div>
+      <div class="cfg-f"><span>Area Path</span><span class="v">…Insight Copilot</span></div>
+      <div class="cfg-f"><span>PAT</span><span class="v">••••••••</span></div>
+      <div class="run-btn">▶ &nbsp;Generate Summary</div>
+    </div>
+    <div class="tool-main">
+      <div class="stat-row">
+        <div class="stat-c"><div class="sc-n">24</div><div class="sc-l">Stories</div><div style="font-size:10px;color:var(--dim);font-family:var(--mono);margin-top:2px">Total</div></div>
+        <div class="stat-c"><div class="sc-n">3</div><div class="sc-l">Features</div></div>
+        <div class="stat-c"><div class="sc-n">7</div><div class="sc-l">Bugs</div></div>
+        <div class="stat-c"><div class="sc-n">84%</div><div class="sc-l">Say / Do</div></div>
+        <div class="stat-c"><div class="sc-n">5</div><div class="sc-l">Priority 1</div></div>
+      </div>
+      <div class="ai-strip">
+        <div class="ai-badge">✦ AI Narrative · Groq llama-3.3-70b</div>
+        <div class="ai-text">Sprint 12 closed <strong>84% of committed scope</strong>. All 5 P1 items resolved on time. <strong>3 stories moved out</strong> due to data pipeline dependency. Velocity trending <strong>+12% vs last sprint</strong>.</div>
+      </div>
+      <div class="item-list">
+        <div class="item-row"><div class="sdot" style="background:#959b7b"></div><span class="ir-id">#4821</span><span class="ir-t">Implement semantic search on conversation history</span><span class="ir-b b-r">Resolved</span></div>
+        <div class="item-row"><div class="sdot" style="background:var(--gold-dark)"></div><span class="ir-id">#4836</span><span class="ir-t">Fix token limit overflow in long context chains</span><span class="ir-b b-a">Active</span></div>
+        <div class="item-row"><div class="sdot" style="background:#6a9db5"></div><span class="ir-id">#4844</span><span class="ir-t">Dashboard KPI alignment with BI team definitions</span><span class="ir-b b-n">New</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+<div class="slide-sep"></div>
+
+<!-- S5 TREND -->
+<section class="slide" id="s5" data-i="4">
+<div class="max-w">
+  <div class="eyebrow sr d1">Tool 2 · Trend Dashboard</div>
+  <div class="h3 sr d2">5-sprint velocity, <em>Say/Do analysis</em><br>and AI-generated trend narrative.</div>
+  <div class="trend-wrap sr d3">
+    <div class="kpi-row">
+      <div class="kpi-c"><div class="kpi-v">84%</div><div class="kpi-l">Say / Do</div><div class="kpi-d ddn">↑ +6% vs last sprint</div></div>
+      <div class="kpi-c"><div class="kpi-v">21</div><div class="kpi-l">Delivered</div><div class="kpi-d ddn">↑ best sprint yet</div></div>
+      <div class="kpi-c"><div class="kpi-v">3</div><div class="kpi-l">Moved Out</div><div class="kpi-d ddn">↓ down from 5</div></div>
+      <div class="kpi-c"><div class="kpi-v">4</div><div class="kpi-l">Scope Creep</div><div class="kpi-d dup">↑ watch this</div></div>
+      <div class="kpi-c"><div class="kpi-v">91%</div><div class="kpi-l">Tasks Done</div><div class="kpi-d ddn">↑ +4%</div></div>
+    </div>
+    <div class="chart-row">
+      <div class="mini-chart">
+        <div class="ct">Delivered Stories — Last 5 Sprints</div>
+        <div class="bc">
+          <div class="bc-col"><div class="bar" style="height:52%;background:rgba(209,163,60,.4);animation-delay:.1s"></div><div class="bv">S8</div></div>
+          <div class="bc-col"><div class="bar" style="height:64%;background:rgba(209,163,60,.52);animation-delay:.2s"></div><div class="bv">S9</div></div>
+          <div class="bc-col"><div class="bar" style="height:60%;background:rgba(209,163,60,.6);animation-delay:.3s"></div><div class="bv">S10</div></div>
+          <div class="bc-col"><div class="bar" style="height:78%;background:rgba(209,163,60,.72);animation-delay:.4s"></div><div class="bv">S11</div></div>
+          <div class="bc-col"><div class="bar" style="height:100%;background:var(--gold);animation-delay:.5s"></div><div class="bv">S12</div></div>
+        </div>
+      </div>
+      <div class="mini-chart">
+        <div class="ct">Say / Do % — Last 5 Sprints</div>
+        <div class="bc">
+          <div class="bc-col"><div class="bar" style="height:68%;background:rgba(229,182,17,.3);animation-delay:.1s"></div><div class="bv">68%</div></div>
+          <div class="bc-col"><div class="bar" style="height:72%;background:rgba(229,182,17,.42);animation-delay:.2s"></div><div class="bv">72%</div></div>
+          <div class="bc-col"><div class="bar" style="height:76%;background:rgba(229,182,17,.54);animation-delay:.3s"></div><div class="bv">76%</div></div>
+          <div class="bc-col"><div class="bar" style="height:80%;background:rgba(229,182,17,.66);animation-delay:.4s"></div><div class="bv">80%</div></div>
+          <div class="bc-col"><div class="bar" style="height:84%;background:var(--gold);animation-delay:.5s"></div><div class="bv">84%</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="ai-strip">
+      <div class="ai-badge">✦ AI Trend Narrative</div>
+      <div class="ai-text">Consistent <strong>upward velocity over 5 sprints (+32% total)</strong>. Say/Do improved each sprint, reaching 84% in Sprint 12. Scope creep (4 mid-sprint adds) is the primary risk — recommend a stronger planning gate for Sprint 13.</div>
+    </div>
+  </div>
+</div>
+</section>
+<div class="slide-sep"></div>
+
+<!-- S6 THE HUB -->
+<section class="slide" id="s6" data-i="5">
+<div class="centered">
+  <div class="eyebrow sr d1">The Solution</div>
+  <div class="h2 sr d2" style="text-align:center">One file.<br><em>Four tools. Zero friction.</em></div>
+  <p class="body-m sr d3" style="text-align:center;margin-top:10px;max-width:400px">Configure once. Every tool reads from the same source of truth.</p>
+  <div class="hub-diagram sr d4">
+    <div class="ring ring-1"><div class="rdot"></div></div>
+    <div class="ring ring-2"><div class="rdot"></div></div>
+    <svg class="hub-svg" viewBox="0 0 460 460">
+      <line x1="230" y1="70"  x2="230" y2="177" stroke="rgba(229,182,17,.2)" stroke-width="1" stroke-dasharray="4 4"/>
+      <line x1="390" y1="230" x2="283" y2="230" stroke="rgba(229,182,17,.2)" stroke-width="1" stroke-dasharray="4 4"/>
+      <line x1="230" y1="390" x2="230" y2="283" stroke="rgba(229,182,17,.2)" stroke-width="1" stroke-dasharray="4 4"/>
+      <line x1="70"  y1="230" x2="177" y2="230" stroke="rgba(229,182,17,.2)" stroke-width="1" stroke-dasharray="4 4"/>
+    </svg>
+    <div class="hub-c"><div class="hci">⚡</div><div class="hcl">Sprint Hub</div></div>
+    <div class="hub-node"><div class="hni">📋</div><div class="hnl">Review</div></div>
+    <div class="hub-node"><div class="hni">🚨</div><div class="hnl">Risk</div></div>
+    <div class="hub-node"><div class="hni">🔁</div><div class="hnl">Retro</div></div>
+    <div class="hub-node"><div class="hni">📈</div><div class="hnl">Trends</div></div>
+  </div>
+  <div class="hub-tag sr d5">Single file · Self-contained · One-click run · AI-powered</div>
+</div>
+</section>
+<div class="slide-sep"></div>
+
+<!-- S7 IMPACT -->
+<section class="slide" id="s7" data-i="6">
+<div class="centered">
+  <div class="eyebrow sr d1">The Impact</div>
+  <div class="h3 sr d2" style="text-align:center"><em>Measurable</em> difference,<br>every sprint.</div>
+  <div class="impact-grid sr d3">
+    <div class="impact-card"><span class="ic-b">2–3 hours</span><div class="ic-a"><em>&lt;2</em> min</div><div class="ic-l">Sprint review prep time</div></div>
+    <div class="impact-card"><span class="ic-b">5+ manual queries</span><div class="ic-a"><em>1</em> click</div><div class="ic-l">To pull all sprint data</div></div>
+    <div class="impact-card"><span class="ic-b">Gut-feel risk checks</span><div class="ic-a"><em>AI</em> scan</div><div class="ic-l">Automated risk detection</div></div>
+    <div class="impact-card"><span class="ic-b">Hours to write</span><div class="ic-a"><em>30</em> sec</div><div class="ic-l">AI retro summary + email</div></div>
+    <div class="impact-card"><span class="ic-b">3 old Excel exports</span><div class="ic-a"><em>5</em> sprints</div><div class="ic-l">Velocity trend, live</div></div>
+    <div class="impact-card"><span class="ic-b">4 tools open</span><div class="ic-a"><em>1</em> file</div><div class="ic-l">Single stop solution</div></div>
+  </div>
+</div>
+</section>
+<div class="slide-sep"></div>
+
+<!-- S8 CLOSE -->
+<section class="slide" id="s8" data-i="7">
+<div class="centered">
+  <div class="eyebrow sr d1">What's Next</div>
+  <div class="h3 sr d2" style="text-align:center">This is version <em>1.0.</em><br>The roadmap is exciting.</div>
+  <div class="vision-items sr d3">
+    <div class="vision-item"><div class="vi-icon">🌐</div><div class="vi-text"><strong>Multi-team scale</strong> — Extend to any team in the org, same single file</div></div>
+    <div class="vision-item"><div class="vi-icon">📄</div><div class="vi-text"><strong>Sprint Hub</strong> — Stitch every tool to a single file and deploy</div></div>
+    <div class="vision-item"><div class="vi-icon">🔔</div><div class="vi-text"><strong>Teams notifications</strong> — auto-post risk alerts to your sprint channel each morning</div></div>
+    <div class="vision-item"><div class="vi-icon">🤖</div><div class="vi-text"><strong>Better AI models</strong> — Using Open AI reasoning models for better understanding</div></div>
+  </div>
+  <div class="closing-quote sr d4">From 5 tools and 3 hours — to one file and 2 minutes.</div>
+  <div class="chips sr d5">
+    <div class="chip chip-o">Built by Insights Copilot team</div>
+    <div class="chip chip-g">⚡ Sprint Hub · v1.0</div>
+    <div class="chip chip-o">AB InBev · 2026</div>
+  </div>
+</div>
+</section>
+
+<script>
+const slides=document.querySelectorAll('.slide');
+const TOTAL=slides.length;
+let current=0;
+
+// Build side nav
+const sn=document.getElementById('side-nav');
+slides.forEach((_,i)=>{
+  const d=document.createElement('div');
+  d.className='snav'+(i===0?' active':'');
+  d.onclick=()=>go(i);
+  sn.appendChild(d);
+});
+
+function go(i){slides[i].scrollIntoView({behavior:'smooth',block:'start'});}
+
+// Reveal on scroll
+const revObs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('vis');});
+},{threshold:0.12});
+document.querySelectorAll('.sr').forEach(el=>revObs.observe(el));
+
+// Active slide tracking
+const slideObs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting&&e.intersectionRatio>=0.5){
+      const i=parseInt(e.target.dataset.i);
+      current=i;
+      document.querySelectorAll('.snav').forEach((d,j)=>d.classList.toggle('active',j===i));
+      document.getElementById('counter').textContent=String(i+1).padStart(2,'0')+' / '+String(TOTAL).padStart(2,'0');
+      document.getElementById('progress').style.width=((i+1)/TOTAL*100)+'%';
+      document.getElementById('scroll-hint').style.opacity=i===TOTAL-1?'0':'1';
+    }
+  });
+},{threshold:0.5});
+slides.forEach(s=>slideObs.observe(s));
+
+// Keyboard
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowDown'||e.key==='ArrowRight'||e.key===' '){e.preventDefault();go(Math.min(current+1,TOTAL-1));}
+  if(e.key==='ArrowUp'||e.key==='ArrowLeft'){e.preventDefault();go(Math.max(current-1,0));}
+});
+
+// Touch swipe (vertical)
+let ty=0;
+document.addEventListener('touchstart',e=>{ty=e.touches[0].clientY;});
+document.addEventListener('touchend',e=>{
+  const dy=e.changedTouches[0].clientY-ty;
+  if(Math.abs(dy)>60){dy<0?go(Math.min(current+1,TOTAL-1)):go(Math.max(current-1,0));}
+});
+
+// Custom cursor
+const cur=document.getElementById('cursor');
+const ring=document.getElementById('cursor-ring');
+document.addEventListener('mousemove',e=>{
+  cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';
+  setTimeout(()=>{ring.style.left=e.clientX+'px';ring.style.top=e.clientY+'px';},60);
+});
+document.addEventListener('mousedown',()=>{cur.style.transform='translate(-50%,-50%) scale(2.2)';ring.style.transform='translate(-50%,-50%) scale(.5)';});
+document.addEventListener('mouseup',()=>{cur.style.transform='translate(-50%,-50%) scale(1)';ring.style.transform='translate(-50%,-50%) scale(1)';});
+</script>
+</body>
+</html>
